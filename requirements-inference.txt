@@ -1,0 +1,7 @@
+vllm==0.26.0
+transformers==5.5.3
+datasets==4.0.0
+peft==0.18.1
+numpy==2.3.5
+sentencepiece
+tqdm

@@ -1,0 +1,2 @@
+# Optional criterion-level semantic scoring, installed in the training environment.
+bert-score==0.3.13

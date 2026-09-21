@@ -1,0 +1,6 @@
+{
+  "base_model": "models/Qwen3-8B",
+  "tokenizer": "models/Qwen3-8B",
+  "stage1_cache": "outputs/Qwen3-8B/cache",
+  "latent_soft_labels": "outputs/Qwen3-8B/targets"
+}

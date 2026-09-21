@@ -1,0 +1,17 @@
+torch==2.11.0
+transformers==5.5.3
+peft==0.18.1
+accelerate==1.11.0
+deepspeed==0.19.4
+datasets==4.0.0
+spacy==3.8.15
+huggingface_hub==1.26.1
+tokenizers==0.22.2
+safetensors==0.8.0
+numpy==2.3.5
+sentencepiece
+filelock
+tqdm
+pyyaml
+ninja
+packaging
