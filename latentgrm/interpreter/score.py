@@ -289,7 +289,8 @@ def main():
     gold_answers = None
     if gold_path.is_file():
         if gold_path.suffix == ".jsonl":
-            gold_answers = [json.loads(line)["cot_answer"] for line in gold_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+            with gold_path.open(encoding="utf-8") as stream:
+                gold_answers = [json.loads(line)["cot_answer"] for line in stream if line.strip()]
         else:
             gold_payload = json.loads(gold_path.read_text(encoding="utf-8"))
             gold_answers = list(gold_payload["answers"])

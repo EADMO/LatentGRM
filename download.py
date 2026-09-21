@@ -1,4 +1,4 @@
-"""Download pinned assets for training and the four main evaluation domains."""
+"""Download pinned assets for training and the evaluation benchmarks."""
 from pathlib import Path
 import argparse, json, os, shutil, tempfile, urllib.request, zipfile
 
@@ -33,7 +33,7 @@ def download_parser(local_wheel=None):
 def main():
     manifest=json.loads((ROOT/'configs/assets.json').read_text())
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--assets',nargs='+',choices=['all','parser',*manifest],default=['qwen3-8b','openrubrics','parser','rubric-generator','rewardbench','rewardbench2'])
+    parser.add_argument('--assets',nargs='+',choices=['all','parser',*manifest],default=['qwen3-8b','openrubrics','parser','rubric-generator','rewardbench','rewardbench2','ppe-ifeval','ifbench','rm-bench','helpsteer3'])
     parser.add_argument('--max-workers',type=int,default=2)
     parser.add_argument('--list',action='store_true')
     parser.add_argument('--parser-wheel',type=Path,help='Use a previously downloaded official spaCy 3.8.0 wheel.')

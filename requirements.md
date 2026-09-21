@@ -28,6 +28,7 @@ The overlay requires **vLLM 0.26.0** and its compatible compiled wheel. Do not s
 
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
+export HF_HUB_DISABLE_XET=1
 python download.py
 ```
 

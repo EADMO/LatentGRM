@@ -23,31 +23,57 @@ def prepare_train(raw,output):
     write(output,rows)
     print(f'Prepared {len(rows)} examples; skipped {len(skipped)} empty responses.')
 
-def main():
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action',choices=['train','benchmarks'])
-    parser.add_argument('--benchmark',choices=['all','rewardbench','rewardbench2'],default='all')
-    args=parser.parse_args();os.chdir(ROOT)
+def prepare_benchmark(benchmark):
     from datasets import load_dataset
-    if args.action=='train':
-        prepare_train(load_dataset('data/raw/openrubrics',split='train'),Path('data/train.jsonl'));return
-    if args.benchmark in ['all','rewardbench']:
+    root = Path('data/raw') / benchmark
+    if benchmark == 'rewardbench':
         from latentgrm.benchmarks.eval_rewardbench import normalize_rewardbench_record
-        from latentgrm.evaluation.judge import REWARDBENCH_SUBSET_MAPPING
-        selected=set(REWARDBENCH_SUBSET_MAPPING['Chat']+REWARDBENCH_SUBSET_MAPPING['Chat Hard'])
-        data=load_dataset('data/raw/rewardbench',split='filtered')
-        rows=[]
-        for exchange in [False,True]:
-            for index,source in enumerate(data):
-                row=normalize_rewardbench_record(dict(source),exchange)
-                if row['subset'] in selected: rows.append({'dataset_index':index,**row})
-        write('data/benchmark_inputs/rewardbench.jsonl',rows)
-        print(f'RewardBench Chat / Chat Hard: {len(rows)} directional pairs')
-    if args.benchmark in ['all','rewardbench2']:
-        from latentgrm.benchmarks.rewardbench2_rubrics import build_extracted_records,reverse_pair
-        raw=load_dataset('data/raw/rewardbench2',split='test')
-        _,pairs,manifest=build_extracted_records(raw,subsets=['Precise IF','Focus'])
-        write('data/benchmark_inputs/rewardbench2.jsonl',pairs+[reverse_pair(row) for row in pairs])
-        print(json.dumps(manifest,indent=2))
+        raw = load_dataset(str(root), split='filtered')
+        rows = [
+            {'dataset_index': index, **normalize_rewardbench_record(dict(row), exchange)}
+            for exchange in [False, True] for index, row in enumerate(raw)
+        ]
+    elif benchmark == 'rewardbench2':
+        from latentgrm.benchmarks.rewardbench2_rubrics import build_extracted_records, reverse_pair
+        raw = load_dataset(str(root), split='test')
+        _, pairs, _ = build_extracted_records(raw)
+        rows = pairs + [reverse_pair(row) for row in pairs]
+    elif benchmark == 'ppe-ifeval':
+        from latentgrm.benchmarks.ppe_ifeval import build_pair_records
+        raw = list(load_dataset('parquet', data_files=str(root / 'data/train-00000-of-00001.parquet'), split='train'))
+        rows, _ = build_pair_records(raw)
+    elif benchmark == 'ifbench':
+        from latentgrm.benchmarks.ifbench import build_pair_records
+        rows, _ = build_pair_records(json.loads((root / 'IFBench.json').read_text()))
+    elif benchmark == 'rm-bench':
+        from latentgrm.benchmarks.rm_bench import build_pair_records
+        rows, _ = build_pair_records(json.loads((root / 'total_dataset.json').read_text()))
+    elif benchmark == 'helpsteer3':
+        import gzip
+        from latentgrm.benchmarks.helpsteer3 import build_pair_records
+        with gzip.open(root / 'preference/validation.jsonl.gz', 'rt', encoding='utf-8') as stream:
+            raw = [json.loads(line) for line in stream if line.strip()]
+        rows, _ = build_pair_records(raw)
+    # Rubrics are generated from prompts by generate_rubrics.py.
+    rows = [{key: value for key, value in row.items() if key != 'rubric'} for row in rows]
+    write(f'data/benchmark_inputs/{benchmark}.jsonl', rows)
+    print(f'{benchmark}: {len(rows)} directional pairs')
 
-if __name__=='__main__': main()
+
+def main():
+    from latentgrm.benchmarks.registry import BENCHMARKS
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', choices=['train', 'benchmarks'])
+    parser.add_argument('--benchmark', choices=['all', *BENCHMARKS], default='all')
+    args = parser.parse_args()
+    os.chdir(ROOT)
+    if args.action == 'train':
+        from datasets import load_dataset
+        prepare_train(load_dataset('data/raw/openrubrics', split='train'), Path('data/train.jsonl'))
+    else:
+        for benchmark in BENCHMARKS if args.benchmark == 'all' else [args.benchmark]:
+            prepare_benchmark(benchmark)
+
+
+if __name__ == '__main__':
+    main()

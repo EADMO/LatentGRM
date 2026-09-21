@@ -14,7 +14,7 @@ REPO_ROOT = EVAL_DIR.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from eval.eval_openrubric_judge import (
+from latentgrm.evaluation.judge import (
     _atomic_write_json,
     read_jsonl,
 )

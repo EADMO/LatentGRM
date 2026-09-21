@@ -66,7 +66,7 @@ For each criterion, reason step-by-step internally and use concrete evidence fro
 Internally aggregate the findings and determine the better response. Do not reveal the reasoning; return only the required label."""
 
 
-# This must stay aligned with latent-sft/src/openrubric_utils.py::OPENRUBRIC_JUDGE_PREFIX.
+# This must stay aligned with latentgrm/openrubric_utils.py::OPENRUBRIC_JUDGE_PREFIX.
 LATENT_SFT_JUDGE_INSTRUCTIONS = """You are a fair and impartial judge. Your task is to evaluate 'Response A' and 'Response B' based on a given instruction and a rubric. You will conduct this evaluation in distinct phases as outlined below.
 
 ### Phase 1: Compliance Check Instructions

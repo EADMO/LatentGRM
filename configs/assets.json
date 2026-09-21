@@ -1,9 +1,68 @@
 {
-  "qwen3-8b": {"repo_id":"Qwen/Qwen3-8B","revision":"b968826d9c46dd6066d109eabc6255188de91218","type":"model","path":"models/Qwen3-8B"},
-  "qwen3-4b": {"repo_id":"Qwen/Qwen3-4B","revision":"1cfa9a7208912126459214e8b04321603b3df60c","type":"model","path":"models/Qwen3-4B"},
-  "rubric-generator": {"repo_id":"OpenRubrics/RubricRM-8B-Rubric-v2","revision":"e64e10cc41c0609b01e13824298985cb80c39e5a","type":"model","path":"models/rubric-generator"},
-  "openrubrics": {"repo_id":"OpenRubrics/OpenRubrics","revision":"0b579f8aeeff55388f276e9438942ab0a512f0ec","type":"dataset","path":"data/raw/openrubrics"},
-  "rewardbench": {"repo_id":"allenai/reward-bench","revision":"168d848cdbbea9764fae4a544dc9ca1e6cca4931","type":"dataset","path":"data/raw/rewardbench"},
-  "rewardbench2": {"repo_id":"allenai/reward-bench-2","revision":"7ff08853b0d5686e79b13fda8677024f566a104a","type":"dataset","path":"data/raw/rewardbench2"},
-  "bertscore": {"repo_id":"FacebookAI/roberta-large","revision":"722cf37b1afa9454edce342e7895e588b6ff1d59","type":"model","path":"models/roberta-large"}
+  "qwen3-8b": {
+    "repo_id": "Qwen/Qwen3-8B",
+    "revision": "b968826d9c46dd6066d109eabc6255188de91218",
+    "type": "model",
+    "path": "models/Qwen3-8B"
+  },
+  "qwen3-4b": {
+    "repo_id": "Qwen/Qwen3-4B",
+    "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+    "type": "model",
+    "path": "models/Qwen3-4B"
+  },
+  "rubric-generator": {
+    "repo_id": "OpenRubrics/RubricRM-8B-Rubric-v2",
+    "revision": "e64e10cc41c0609b01e13824298985cb80c39e5a",
+    "type": "model",
+    "path": "models/rubric-generator"
+  },
+  "openrubrics": {
+    "repo_id": "OpenRubrics/OpenRubrics",
+    "revision": "0b579f8aeeff55388f276e9438942ab0a512f0ec",
+    "type": "dataset",
+    "path": "data/raw/openrubrics"
+  },
+  "rewardbench": {
+    "repo_id": "allenai/reward-bench",
+    "revision": "168d848cdbbea9764fae4a544dc9ca1e6cca4931",
+    "type": "dataset",
+    "path": "data/raw/rewardbench"
+  },
+  "rewardbench2": {
+    "repo_id": "allenai/reward-bench-2",
+    "revision": "7ff08853b0d5686e79b13fda8677024f566a104a",
+    "type": "dataset",
+    "path": "data/raw/rewardbench2"
+  },
+  "bertscore": {
+    "repo_id": "FacebookAI/roberta-large",
+    "revision": "722cf37b1afa9454edce342e7895e588b6ff1d59",
+    "type": "model",
+    "path": "models/roberta-large"
+  },
+  "ppe-ifeval": {
+    "repo_id": "lmarena-ai/PPE-IFEval-Best-of-K",
+    "revision": "a4f7fae2443d96529dee6b65863a816a051b3a4d",
+    "type": "dataset",
+    "path": "data/raw/ppe-ifeval"
+  },
+  "ifbench": {
+    "repo_id": "THU-KEG/IFBench",
+    "revision": "6fa6f03960d0e5eab9e5c8549a355a1ade70291e",
+    "type": "dataset",
+    "path": "data/raw/ifbench"
+  },
+  "rm-bench": {
+    "repo_id": "THU-KEG/RM-Bench",
+    "revision": "5e094adbde982855284918147e84a169f7282a2a",
+    "type": "dataset",
+    "path": "data/raw/rm-bench"
+  },
+  "helpsteer3": {
+    "repo_id": "nvidia/HelpSteer3",
+    "revision": "f6d145777bcbde96137596340fab89793acd1031",
+    "type": "dataset",
+    "path": "data/raw/helpsteer3"
+  }
 }

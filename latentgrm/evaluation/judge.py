@@ -606,6 +606,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Evaluate an OpenRubric Latent-SFT Stage-2 model."
     )
+    from latentgrm.benchmarks.registry import BENCHMARKS
+    parser.add_argument('--benchmark', choices=BENCHMARKS)
     parser.add_argument("--data_path", type=Path, required=True)
     parser.add_argument(
         "--model_path",
@@ -1160,32 +1162,12 @@ def main() -> None:
                 elapsed_seconds=time.monotonic() - started_at,
                 generation_only_seconds=generation_only_seconds,
             )
-            # RewardBench2 数据额外附加官方评分（score_percent），
-            # 保证无论 vote 多少、从哪个入口评测，summary 都含官方统计。
-            if raw_data and all(
-                key in raw_data[0]
-                for key in (
-                    "source_dataset_index",
-                    "prompt_id",
-                    "chosen_index",
-                    "rejected_index",
-                    "subset",
-                    "exchange",
-                )
-            ):
-                try:
-                    # 延迟 import 避免与 summarize_rewardbench2 的循环导入。
-                    from .summarize_rewardbench2 import summarize_rewardbench2
-
-                    rb2 = summarize_rewardbench2(results, raw_data)
-                    summary["rewardbench2"] = rb2["rewardbench2"]
-                    summary["rewardbench2_diagnostics"] = rb2["rewardbench2_diagnostics"]
-                except Exception as exc:
-                    print(
-                        "warning: rewardbench2 official scoring skipped: "
-                        f"{exc}",
-                        flush=True,
-                    )
+            if args.benchmark:
+                from .benchmark_metrics import summarize_benchmark
+                metrics = summarize_benchmark(args.benchmark, results, raw_data)
+                if metrics:
+                    summary.pop('accuracy', None)
+                    summary.update(metrics)
             summary.update(
                 {
                     "evaluation_id": signature,

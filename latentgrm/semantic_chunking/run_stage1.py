@@ -39,8 +39,6 @@ def main():
         raise ValueError("Semantic Chunking training requires a Stage-1 cache")
     if data_args.stage1_cache_path:
         from latentgrm.semantic_chunking.stage1_cache import Stage1Cache
-        # Fail before allocating the training models. The dataset additionally
-        # checks the actual model tokenizer after model construction.
         Stage1Cache(data_args.stage1_cache_path, data_path=data_args.train_data_path,
                     compression_rate=data_args.compression_rate, use=data_args.use)
     if (

@@ -28,11 +28,12 @@ Training uses PyTorch, Transformers, PEFT, and DeepSpeed. See [requirements.md](
 
 ```bash
 export HF_ENDPOINT=https://hf-mirror.com
+export HF_HUB_DISABLE_XET=1
 python download.py
 python prepare_data.py train
 ```
 
-`download.py` downloads Qwen3-8B, OpenRubrics, the rubric generator, RewardBench, RewardBench 2, and the spaCy English parser. Model and dataset versions are listed in [configs/assets.json](configs/assets.json). `HF_ENDPOINT` is optional when downloading directly from Hugging Face.
+`download.py` downloads Qwen3-8B, OpenRubrics, the rubric generator, RewardBench, RewardBench 2, PPE-IFEval, IFBench, RM-Bench, HelpSteer3, and the spaCy English parser. Model and dataset versions are listed in [configs/assets.json](configs/assets.json). `HF_ENDPOINT` is optional when downloading directly from Hugging Face.
 
 Training data is saved to `data/train.jsonl`. Preparation converts OpenRubrics into the judge format and removes examples with empty candidate responses, yielding **35,612 examples**.
 
@@ -65,18 +66,21 @@ The [vLLM extension](third_party/vllm/readme.md) supports latent sampling, tenso
 
 ```bash
 python prepare_data.py benchmarks
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python generate_rubrics.py --benchmark rewardbench
-CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python generate_rubrics.py --benchmark rewardbench2
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash scripts/generate_rubrics.sh
 ```
 
-| Benchmark | Subsets | Directional pairs |
+| Benchmark | Evaluation subsets | Evaluated directional pairs |
 | --- | --- | ---: |
 | RewardBench | Chat, Chat Hard | 1,628 |
 | RewardBench 2 | Precise IF, Focus | 3,930 |
+| PPE-IFEval | Sampled conflict pairs | 5,120 |
+| IFBench | All released preference pairs | 888 |
+| RM-Bench | Chat | 2,322 |
+| HelpSteer3 | Non-tie preference validation pairs | 3,834 |
 
-Preparation includes both candidate orders. Rubrics are generated with `OpenRubrics/RubricRM-8B-Rubric-v2` using greedy decoding and up to 1,024 output tokens. Each distinct request receives one rubric, shared across its response pairs. Generation resumes automatically when rerun.
+Data preparation and rubric generation preserve the complete source ordering and both candidate orders; evaluation selects the subsets listed above. Rubrics are generated with `OpenRubrics/RubricRM-8B-Rubric-v2` using greedy decoding and up to 1,024 output tokens. Each source prompt receives one rubric, shared across its response pairs and both candidate orders. Generation resumes automatically when rerun.
 
-The resulting evaluation inputs are `data/eval/rewardbench.jsonl` and `data/eval/rewardbench2.jsonl`. Use `--tensor-parallel-size` to set the GPU count or `--backend transformers` for rubric generation with Transformers.
+Evaluation inputs are saved to `data/eval/<benchmark>.jsonl`. To prepare or generate rubrics for one benchmark, use `python prepare_data.py benchmarks --benchmark rm-bench` or `python generate_rubrics.py --benchmark rm-bench`. Use `--tensor-parallel-size` to set the GPU count or `--backend transformers` for rubric generation with Transformers.
 
 ### Evaluate LatentGRM
 
@@ -84,7 +88,7 @@ The resulting evaluation inputs are `data/eval/rewardbench.jsonl` and `data/eval
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash scripts/evaluate.sh
 ```
 
-This runs single-vote and five-vote evaluation on both benchmarks. To run an individual evaluation:
+This runs single-vote and five-vote evaluation on all six benchmarks using the subsets listed above. To run an individual evaluation:
 
 ```bash
 python evaluate.py --benchmark rewardbench --vote 5
@@ -92,6 +96,8 @@ python evaluate.py --benchmark rewardbench2 --vote 5
 ```
 
 Evaluation loads `outputs/Qwen3-8B/stage2/hf/` by default. Use `--model` to select another model, `--tensor-parallel-size` to set the GPU count, or `--backend hf` to use Transformers. The default decoding settings use seed 42, top-10 interpolation, Gumbel temperature and noise scale 1, a context length of 6,144, up to 256 latent steps, and 8 answer tokens.
+
+Scoring follows each benchmark's aggregation: weighted section accuracy for RewardBench; prompt-level success for RewardBench 2; conflict-pair accuracy for PPE-IFEval; pairwise accuracy for IFBench and HelpSteer3; and the mean of Easy, Normal, and Hard accuracies for RM-Bench Chat. Scores are reported for each candidate order and their average.
 
 Results and metric summaries are written to `outputs/evaluation/<benchmark>/<checkpoint>/vote<N>/`. Rerunning the command continues from saved results. Use `--output` to select a different output file.
 
@@ -108,4 +114,4 @@ See [Interpreter](docs/interpreter.md) for training settings, reconstruction, la
 
 ## Acknowledgments
 
-The training implementation builds on [Latent-SFT](https://github.com/DJC-GO-SOLO/Latent-SFT). We use OpenRubrics for training and RewardBench and RewardBench 2 for evaluation. See [THIRD_PARTY.md](THIRD_PARTY.md) for upstream licenses.
+The training implementation builds on [Latent-SFT](https://github.com/DJC-GO-SOLO/Latent-SFT). We use OpenRubrics for training and the six datasets listed above for evaluation. See [THIRD_PARTY.md](THIRD_PARTY.md) for upstream licenses.

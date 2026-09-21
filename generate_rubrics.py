@@ -1,10 +1,18 @@
-"""Generate one rubric per distinct request, then join it to both pair orders."""
+"""Generate a rubric for each source prompt and share it across its response pairs."""
 from pathlib import Path
 import argparse, hashlib, json, os
 from prepare_data import write
+from latentgrm.benchmarks.registry import BENCHMARKS
 from latentgrm.evaluation.progress import read_complete_rows
 
 ROOT=Path(__file__).resolve().parent
+
+def request_id(row):
+    if 'source_dataset_index' in row:
+        return str(row['source_dataset_index'])
+    if 'dataset_index' in row:
+        return str(row['dataset_index'])
+    return hashlib.sha256(row['instruction'].encode()).hexdigest()
 
 def read_progress(path):
     result={}
@@ -18,7 +26,7 @@ def read_progress(path):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--benchmark',choices=['rewardbench','rewardbench2'],required=True)
+    parser.add_argument('--benchmark',choices=BENCHMARKS,required=True)
     parser.add_argument('--model',default='models/rubric-generator')
     parser.add_argument('--backend',choices=['transformers','vllm'],default='vllm')
     parser.add_argument('--tensor-parallel-size',type=int,default=8)
@@ -28,8 +36,9 @@ def main():
     args=parser.parse_args();os.chdir(ROOT)
     if args.batch_size<1: parser.error('--batch-size must be positive')
     source=ROOT/f'data/benchmark_inputs/{args.benchmark}.jsonl'
-    rows=[json.loads(line) for line in source.read_text().splitlines() if line.strip()]
-    requests={hashlib.sha256(row['instruction'].encode()).hexdigest():row['instruction'] for row in rows}
+    with source.open(encoding='utf-8') as stream:
+        rows=[json.loads(line) for line in stream if line.strip()]
+    requests={request_id(row):row['instruction'] for row in rows}
     output=ROOT/f'data/rubrics/{args.benchmark}';output.mkdir(parents=True,exist_ok=True)
     settings=vars(args)
     meta=output/'generation.json'
@@ -57,7 +66,7 @@ def main():
                     stream.write(json.dumps({'request_id':key,'rubric':rubric},ensure_ascii=False)+'\n');stream.flush()
                     completed[key]=rubric
                 print(f'{len(completed)}/{len(requests)} rubrics',flush=True)
-    joined=[{**row,'rubric':completed[hashlib.sha256(row['instruction'].encode()).hexdigest()]} for row in rows]
+    joined=[{**row,'rubric':completed[request_id(row)]} for row in rows]
     write(f'data/eval/{args.benchmark}.jsonl',joined)
     print(f'Ready: data/eval/{args.benchmark}.jsonl ({len(joined)} directional pairs)')
 
