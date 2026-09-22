@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Score explicit criterion status fidelity in full-CoT generations."""
+"""Score criterion fidelity in reasoning reconstructed by the interpreter."""
 
 from __future__ import annotations
 

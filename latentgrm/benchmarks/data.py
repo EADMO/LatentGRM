@@ -12,7 +12,6 @@ from .parsing import normalize_winner
 
 from .paths import data_path
 
-from .templates import build_judge_prompt
 
 DATASET_ID = data_path("openrubric", "hf", "OpenRubrics")
 
@@ -42,23 +41,3 @@ def validate_openrubrics_record(record: dict[str, Any]) -> None:
         if not str(record.get(field, "")).strip():
             raise ValueError(f"record field {field!r} is empty")
     normalize_winner(record["winner"])
-
-def validate_judge_record(record: dict[str, Any]) -> None:
-    validate_openrubrics_record(record)
-
-def judge_sft_record(record: dict[str, Any]) -> dict[str, str]:
-    validate_judge_record(record)
-    output = str(record["judge"]).strip()
-    if "winner:" not in output.lower():
-        winner = normalize_winner(record["winner"])
-        output = output.rstrip() + f"\nWinner: {'Response A' if winner == 'response_a' else 'Response B'}"
-    return {
-        "instruction": build_judge_prompt(
-            instruction=str(record["instruction"]),
-            rubric=str(record["rubric"]),
-            response_a=str(record["response_a"]),
-            response_b=str(record["response_b"]),
-        ),
-        "input": "",
-        "output": output,
-    }

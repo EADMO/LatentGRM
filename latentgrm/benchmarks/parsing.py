@@ -6,7 +6,6 @@ import re
 from typing import Any
 
 
-WINNER_RE = re.compile(r"winner\s*:\s*(response\s*[ab]|a|b)\b", re.IGNORECASE)
 
 
 def normalize_winner(value: Any) -> str:
@@ -28,20 +27,6 @@ def normalize_winner(value: Any) -> str:
         return "response_b"
 
     raise ValueError(f"unsupported winner label: {value!r}")
-
-
-def parse_winner_from_text(text: str) -> str:
-    """Extract the final winner from a judge output."""
-    if not text:
-        raise ValueError("empty judge output")
-
-    matches = list(WINNER_RE.finditer(text))
-    if matches:
-        return normalize_winner(matches[-1].group(1))
-
-    # Fallback for short model outputs such as "Response A".
-    tail = text.strip().splitlines()[-1].strip()
-    return normalize_winner(tail)
 
 
 def rewardbench_label_from_record(record: dict[str, Any]) -> str:

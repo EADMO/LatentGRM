@@ -20,7 +20,7 @@ class GenerationConfig:
     top_p: float | None = None
     top_k: int | None = None
     # Qwen3 changes its assistant prefix when thinking is enabled. Keep this
-    # task-level so evaluators can reproduce the SFT chat-template setting.
+    # task-level so rubric generation uses the requested chat template.
     enable_thinking: bool = False
 
 def infer_base_model_dir(adapter_dir: str | Path) -> str | None:
@@ -262,7 +262,7 @@ def load_single_generator(
     vllm_tensor_parallel_size: int = 1,
     vllm_gpu_memory_utilization: float = 0.9,
     vllm_max_lora_rank: int = 64,
-    adapter_name: str = "judge",
+    adapter_name: str = "rubric",
     tokenizer_dir: str | Path | None = None,
 ) -> Any:
     if backend == "transformers":

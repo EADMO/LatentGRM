@@ -12,14 +12,14 @@ def write(path,rows):
     temp.replace(path)
 
 def prepare_train(raw,output):
-    from latentgrm.benchmarks.data import judge_sft_record
-    from latentgrm.openrubric_utils import convert_judge_record
+    from latentgrm.benchmarks.data import validate_openrubrics_record
+    from latentgrm.openrubric_utils import convert_openrubrics_record
     rows=[];skipped=[]
     for index,row in enumerate(raw):
-        try: source=judge_sft_record(dict(row))
+        try: validate_openrubrics_record(dict(row))
         except ValueError as exc:
             skipped.append({'index':index,'reason':str(exc)});continue
-        rows.append(convert_judge_record(source,len(rows)))
+        rows.append(convert_openrubrics_record(dict(row),len(rows)))
     write(output,rows)
     print(f'Prepared {len(rows)} examples; skipped {len(skipped)} empty responses.')
 

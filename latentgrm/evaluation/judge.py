@@ -889,8 +889,7 @@ def generate_with_vllm(
     # vLLM's EngineCore subprocess must not fork a CUDA-initialized process
     # (the parent eval process initializes torch CUDA in distributed_runtime).
     os.environ.setdefault("VLLM_WORKER_MULTIPROC_METHOD", "spawn")
-    # Explicitly use the V2 model runner (vLLM 0.26 default, same path as the
-    # baseline RubricRM evals). Latent-SFT is implemented on the V2 runner.
+    # Latent inference uses the V2 model runner in vLLM 0.26.
     os.environ["VLLM_USE_V2_MODEL_RUNNER"] = "1"
     # Drop torchrun env vars so vLLM's own TP init (multiproc executor) is not
     # confused by the RANK/LOCAL_RANK/WORLD_SIZE set by torch.distributed.run.

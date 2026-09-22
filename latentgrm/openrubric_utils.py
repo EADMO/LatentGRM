@@ -30,23 +30,22 @@ _WINNER_LINE_RE = re.compile(
 _VALID_WINNER_VALUE_RE = re.compile(r"(?i)^Response[ \t]+([AB])$")
 
 
-def convert_judge_record(record: dict[str, Any], source_index: int) -> dict[str, Any]:
-    """Convert one OpenRubric judge SFT row to the LatentGRM schema."""
-    if not isinstance(record, dict):
-        raise ValueError(f"Record {source_index} must be a JSON object")
+def convert_openrubrics_record(record: dict[str, Any], source_index: int) -> dict[str, Any]:
+    """Convert an OpenRubrics row directly to latent-training supervision."""
+    from .benchmarks.parsing import normalize_winner
 
-    instruction = record.get("instruction")
-    output = record.get("output")
-    for field_name, value in (("instruction", instruction), ("output", output)):
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError(
-                f"Record {source_index} has an invalid {field_name!r} field"
-            )
-
-    if instruction.count(TASK_MARKER) != 1:
-        raise ValueError(
-            f"Record {source_index} must contain exactly one {TASK_MARKER!r} marker"
-        )
+    task_body = (
+        f"Instruction:\n{str(record['instruction']).strip()}\n"
+        f"Rubric:\n{str(record['rubric']).strip()}\n"
+        f"Response A:\n{str(record['response_a']).strip()}\n"
+        f"Response B:\n{str(record['response_b']).strip()}"
+    )
+    if TASK_MARKER in task_body:
+        raise ValueError(f"Record {source_index} contains an embedded task marker")
+    output = str(record["judge"]).strip()
+    if "winner:" not in output.lower():
+        winner = normalize_winner(record["winner"])
+        output += f"\nWinner: {'Response A' if winner == 'response_a' else 'Response B'}"
 
     winner_matches = list(_WINNER_LINE_RE.finditer(output))
     if len(winner_matches) != 1:
@@ -63,10 +62,6 @@ def convert_judge_record(record: dict[str, Any], source_index: int) -> dict[str,
             f"Record {source_index} has unsupported winner label {winner_value!r}"
         )
     label = f"Response {valid_winner.group(1).upper()}"
-
-    task_body = instruction.split(TASK_MARKER, 1)[1].strip()
-    if not task_body:
-        raise ValueError(f"Record {source_index} has an empty task body")
 
     cot = (output[: winner_match.start()] + output[winner_match.end() :]).strip()
     if not cot:
@@ -92,21 +87,3 @@ def parse_binary_label(text: str) -> str | None:
 
 def is_openrubric_example(example: dict[str, Any]) -> bool:
     return example.get("task_type") == OPENRUBRIC_TASK_TYPE
-
-
-def build_explicit_cot_target(example: dict[str, Any]) -> str:
-    """Render the format-aligned CoT-SFT assistant target for Qwen."""
-    cot = example.get("cot")
-    answer = example.get("cot_answer")
-    if not isinstance(cot, str) or not cot.strip():
-        raise ValueError("Explicit CoT seed has an invalid cot field")
-    if answer not in VALID_LABELS:
-        raise ValueError(f"Explicit CoT seed has invalid label: {answer!r}")
-    cot = cot.strip()
-    if cot.startswith("<think>"):
-        cot = cot[len("<think>"):].lstrip("\n")
-    if cot.endswith("</think>"):
-        cot = cot[:-len("</think>")].rstrip("\n")
-    if "<think>" in cot or "</think>" in cot:
-        raise ValueError("Reasoning chain contains nested think markers")
-    return f"<think>\n{cot}\n</think>\n\n{answer}"
