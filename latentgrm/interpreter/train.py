@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-"""Train a fresh-base CoT explainer from cached weighted latent prefixes.
-
-This control deliberately initializes the decoder from the untouched official
-Qwen3-8B Base only.  Stage-1, union, final, and earlier explainer adapters are
-forbidden, so the decoder has no task-specific exposure before this run.
-"""
+"""Initialize a Qwen3-4B or Qwen3-8B interpreter and train on latent prefixes."""
 
 from __future__ import annotations
 
@@ -637,20 +632,8 @@ def limited(indices: list[int], maximum: int | None, seed: int) -> list[int]:
     return [indices[i] for i in order]
 
 
-def load_fresh_base_decoder(paths: dict[str, str], tokenizer, args):
-    forbidden = {
-        "stage1_decoder_lora",
-        "union_decoder_lora",
-        "final_lora",
-        "decoder_lora",
-        "adapter",
-    }
-    present = sorted(forbidden.intersection(paths))
-    if present:
-        raise ValueError(
-            "fresh-base experiment refuses task-trained decoder paths: "
-            + ", ".join(present)
-        )
+def load_interpreter(paths: dict[str, str], tokenizer, args, adapter=None):
+    """Load the selected pretrained base with a new or trained interpreter LoRA."""
     dtype = torch.bfloat16 if args.bf16 else torch.float16
     base = AutoModelForCausalLM.from_pretrained(
         paths["base_model"],
@@ -668,6 +651,10 @@ def load_fresh_base_decoder(paths: dict[str, str], tokenizer, args):
             f"embeddings={embedding_count}, tokenizer={len(tokenizer)}"
         )
     base.config.use_cache = False
+    if adapter is not None:
+        return BackwardDecoder(
+            PeftModel.from_pretrained(base, adapter, is_trainable=False)
+        )
     config = LoraConfig(
         r=args.lora_rank,
         lora_alpha=args.lora_rank * 2,
@@ -692,6 +679,7 @@ def load_fresh_base_decoder(paths: dict[str, str], tokenizer, args):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths", default=str(ROOT / "configs/interpreter.json"))
+    parser.add_argument("--base-model", help="Pretrained Qwen3-4B or Qwen3-8B directory.")
     parser.add_argument(
         "--split-file", default=str(ROOT / "outputs/backward_splits.json")
     )
@@ -749,6 +737,8 @@ def main():
         torch.cuda.set_device(local_rank)
     set_seed(args.seed)
     paths = load_json(args.paths)
+    if args.base_model:
+        paths["base_model"] = args.base_model
     tokenizer = AutoTokenizer.from_pretrained(
         paths["tokenizer"], local_files_only=True, trust_remote_code=True
     )
@@ -789,7 +779,7 @@ def main():
         soft_temperature=args.soft_temperature,
         input_mode=args.input_mode,
     )
-    model = load_fresh_base_decoder(paths, tokenizer, args)
+    model = load_interpreter(paths, tokenizer, args)
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         do_train=True,
@@ -828,8 +818,7 @@ def main():
     )
     metadata = {
         "schema": "interpreter-training",
-        "decoder_initialization": "untouched_qwen3_8b_base_only",
-        "task_trained_decoder_adapters_loaded": [],
+        "interpreter_initialization": paths["base_model"],
         "objective": "latent prefix z_1..z_t -> explicit CoT prefix x_1..x_t",
         "paths": paths,
         "split_file": args.split_file,

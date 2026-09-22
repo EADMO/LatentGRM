@@ -9,7 +9,7 @@ LatentGRM compresses explicit evaluation traces into latent chains and learns to
 - **Semantic Chunking** partitions reasoning traces using rubric structure and linguistic boundaries.
 - **Two-stage training** learns an encoder-decoder system, then trains the reward model with latent supervision and preference labels.
 - **Latent inference** supports single judgments and multi-vote evaluation with an optimized vLLM backend.
-- **Latent interpretation** reconstructs explicit reasoning from latent states using an optional decoder.
+- **Latent interpretation** uses an interpreter initialized from Qwen3-4B or Qwen3-8B to reconstruct explicit reasoning from latent states.
 
 ## Installation
 
@@ -103,12 +103,14 @@ Results and metric summaries are written to `outputs/evaluation/<benchmark>/<che
 
 ## Optional Interpreter
 
-The interpreter learns to reconstruct explicit reasoning from the joint encoder's latent states. After training the main model, run:
+The optional interpreter is initialized from Qwen3-4B or Qwen3-8B and learns to reconstruct explicit reasoning from the joint encoder's latent states. After training the main model, run:
 
 ```bash
 conda activate latentgrm-train
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 bash scripts/train_interpreter.sh
 ```
+
+The default interpreter uses Qwen3-8B. To use Qwen3-4B, run `python download.py --assets qwen3-4b`, then set `BASE_MODEL=models/Qwen3-4B` when launching the script. Outputs are saved under `outputs/interpreter/Qwen3-8B/model/` or `outputs/interpreter/Qwen3-4B/model/`.
 
 See [Interpreter](docs/interpreter.md) for training settings, reconstruction, latent controls, and fidelity metrics.
 

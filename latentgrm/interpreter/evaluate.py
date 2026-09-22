@@ -17,20 +17,19 @@ from collections import Counter
 from pathlib import Path
 
 import torch
-from peft import PeftModel
+from peft import PeftConfig
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
 from .train import (
     ROOT,
     BackwardCollator,
-    BackwardDecoder,
     BackwardPrefixDataset,
     ShardedLatentStore,
     build_split_indices,
     limited,
     load_json,
-    load_fresh_base_decoder,
+    load_interpreter,
 )
 
 
@@ -41,6 +40,7 @@ SCOPES = ("first_1", "first_8", "first_32", "first_64", "chunk_boundaries", "all
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths", default=str(ROOT / "configs/interpreter.json"))
+    parser.add_argument("--base-model", help="Override the pretrained base directory saved with the adapter.")
     parser.add_argument("--split-file", default=str(ROOT / "outputs/interpreter/split.json"))
     parser.add_argument("--adapter", required=True)
     parser.add_argument("--output", required=True)
@@ -358,6 +358,9 @@ def free_generate(
 def main():
     args = parse_args()
     paths = load_json(args.paths)
+    paths["base_model"] = (
+        args.base_model or PeftConfig.from_pretrained(args.adapter).base_model_name_or_path
+    )
     tokenizer = AutoTokenizer.from_pretrained(paths["tokenizer"], local_files_only=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -384,10 +387,7 @@ def main():
         soft_temperature=args.soft_temperature,
         input_mode=args.input_mode,
     )
-    model = load_fresh_base_decoder(paths, tokenizer, args)
-    base = model.decoder.unload()
-    decoder = PeftModel.from_pretrained(base, args.adapter, is_trainable=False)
-    model = BackwardDecoder(decoder)
+    model = load_interpreter(paths, tokenizer, args, adapter=args.adapter)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device).eval()
     collator = BackwardCollator(tokenizer.pad_token_id)
