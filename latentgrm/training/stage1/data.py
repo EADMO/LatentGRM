@@ -3,8 +3,6 @@ import json
 import torch
 
 
-
-
 def read_jsonl(input_file_path):
     data = []
     with open(input_file_path, 'r', encoding='utf-8') as file:
@@ -25,9 +23,6 @@ def build_latent_token_induction_mask(
     - If dtype is None: bool mask (True = keep, False = mask)
     - Else: float additive mask (keep = 0, mask = -inf), auto-cast to the given dtype
     """
-    if not (isinstance(special_token_ids, list) and all(isinstance(x, int) for x in special_token_ids)):
-        raise TypeError("special_token_ids must be List[int]")
-
     B, T = input_ids.shape
     device = input_ids.device
 

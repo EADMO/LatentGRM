@@ -1,23 +1,9 @@
 from __future__ import annotations
 
-
 from collections.abc import Iterable
-
-from pathlib import Path
-
 from typing import Any
 
-
 from .parsing import normalize_winner
-
-from .paths import data_path
-
-
-DATASET_ID = data_path("openrubric", "hf", "OpenRubrics")
-
-DEFAULT_CACHE_DIR = Path(data_path("openrubric", "hf_cache"))
-
-DEFAULT_EXPORT_DIR = Path(data_path("openrubric", "sft"))
 
 REQUIRED_FIELDS = {
     "instruction",

@@ -6,8 +6,6 @@ import re
 from typing import Any
 
 
-
-
 def normalize_winner(value: Any) -> str:
     """Normalize common winner labels to ``response_a`` or ``response_b``."""
     if value is None:

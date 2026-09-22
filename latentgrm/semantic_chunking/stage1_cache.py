@@ -1,4 +1,4 @@
-"""Persistent deterministic token/split cache for punctuation-aware Stage-1.
+"""Cache tokenization and Semantic Chunking boundaries for Stage 1.
 
 Only deterministic preprocessing is cached.  ``supervision_frontier`` remains
 sampled in ``Stage1Dataset.__getitem__`` so caching does not change the training

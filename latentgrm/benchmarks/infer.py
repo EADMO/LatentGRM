@@ -1,16 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
 import json
-
-
 from pathlib import Path
-
 from typing import Any
 
-
-from .paths import MODEL_ROOT, require_existing_dir
+from .paths import resolve_repo_path
 
 
 @dataclass
@@ -33,9 +28,8 @@ def infer_base_model_dir(adapter_dir: str | Path) -> str | None:
 
 def resolve_model_checkpoint_dir(
     model_dir: str | Path,
-    label: str = "model",
 ) -> Path:
-    resolved = require_existing_dir(model_dir, MODEL_ROOT, label)
+    resolved = resolve_repo_path(model_dir)
     nested_hf = resolved / "hf"
     if (
         not (resolved / "config.json").is_file()
@@ -54,21 +48,7 @@ class TransformersGenerator:
             raise RuntimeError("torch and transformers are required for inference.") from exc
 
         self.torch = torch
-        model_dir = resolve_model_checkpoint_dir(model_dir)
-        adapter_dir = model_dir if (model_dir / "adapter_config.json").exists() else None
-        load_model_dir = model_dir
-        if adapter_dir is not None:
-            if base_model_dir is not None:
-                load_model_dir = resolve_model_checkpoint_dir(
-                    base_model_dir, "base model"
-                )
-            else:
-                inferred = infer_base_model_dir(adapter_dir)
-                if inferred:
-                    load_model_dir = require_existing_dir(
-                        inferred, MODEL_ROOT, "base model"
-                    )
-
+        load_model_dir, adapter_dir = resolve_load_model_dir(model_dir, base_model_dir)
         tokenizer_dir = adapter_dir or load_model_dir
         self.tokenizer = AutoTokenizer.from_pretrained(
             str(tokenizer_dir),
@@ -182,14 +162,12 @@ def resolve_load_model_dir(
     if adapter_dir is not None:
         if base_model_dir is not None:
             load_model_dir = resolve_model_checkpoint_dir(
-                base_model_dir, "base model"
+                base_model_dir
             )
         else:
             inferred = infer_base_model_dir(adapter_dir)
             if inferred:
-                load_model_dir = require_existing_dir(
-                    inferred, MODEL_ROOT, "base model"
-                )
+                load_model_dir = resolve_repo_path(inferred)
     return load_model_dir, adapter_dir
 
 class VLLMAdapterGenerator:
@@ -277,7 +255,7 @@ def load_single_generator(
 
     load_model_dir, adapter_dir = resolve_load_model_dir(model_dir, base_model_dir)
     resolved_tokenizer_dir = (
-        require_existing_dir(tokenizer_dir, MODEL_ROOT, "tokenizer")
+        resolve_repo_path(tokenizer_dir)
         if tokenizer_dir is not None
         else (adapter_dir or load_model_dir)
     )

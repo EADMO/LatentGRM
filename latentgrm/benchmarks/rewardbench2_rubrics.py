@@ -9,7 +9,6 @@ from typing import Any, Iterable, Sequence
 
 DEFAULT_DATASET_ID = "data/rewardbench2"
 
-DEFAULT_CACHE_DIR = "data/rewardbench2_cache"
 
 DEFAULT_EXTRACT_DIR = "data/rewardbench2_extracted"
 

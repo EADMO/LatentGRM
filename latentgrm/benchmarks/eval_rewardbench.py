@@ -1,19 +1,8 @@
 from __future__ import annotations
 
-
-from pathlib import Path
-
 from typing import Any
 
-
 from .parsing import rewardbench_label_from_record
-
-from .paths import data_path
-
-
-DEFAULT_REWARDBENCH_ID = data_path("rewardbench")
-
-DEFAULT_CACHE_DIR = Path(data_path("rewardbench_cache"))
 
 def normalize_rewardbench_record(record: dict[str, Any], exchange: bool = False) -> dict[str, Any]:
     instruction = (

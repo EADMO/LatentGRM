@@ -1,12 +1,6 @@
 import math
 from typing import Any
 
-from latentgrm.openrubric_utils import is_openrubric_example
-
-
-MATH_SYSTEM_PROMPT = (
-    "Please reason step by step, and put your final answer within \\boxed{}."
-)
 LATENT_SFT_MAX_LENGTH = 6144
 
 
@@ -29,7 +23,7 @@ def truncate_stage1_tokens(
     compression_rate: int,
     max_length: int = LATENT_SFT_MAX_LENGTH,
 ) -> tuple[list[int], list[int]]:
-    """Fit the LTIM encoder sequence under a hard token limit.
+    """Fit the Stage-1 encoder sequence under a hard token limit.
 
     The encoder is the longest Stage-1 view because it contains explicit CoT
     tokens plus one compress placeholder per segment.  Prompt truncation keeps
@@ -109,13 +103,7 @@ def build_qwen_generation_prefix(
     example: dict[str, Any],
 ) -> str:
     """Build the assistant prefix shared by every Qwen training stage."""
-    if is_openrubric_example(example):
-        messages = [{"role": "user", "content": example["problem"]}]
-    else:
-        messages = [
-            {"role": "system", "content": MATH_SYSTEM_PROMPT},
-            {"role": "user", "content": example["problem"]},
-        ]
+    messages = [{"role": "user", "content": example["problem"]}]
 
     return tokenizer.apply_chat_template(
         messages,

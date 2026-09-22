@@ -83,7 +83,3 @@ def parse_binary_label(text: str) -> str | None:
     """Accept only an exact OpenRubric binary label after trimming whitespace."""
     normalized = text.strip()
     return normalized if normalized in VALID_LABELS else None
-
-
-def is_openrubric_example(example: dict[str, Any]) -> bool:
-    return example.get("task_type") == OPENRUBRIC_TASK_TYPE

@@ -215,6 +215,5 @@ def boundary_evidence(text, offsets, config):
         if intra[b]:
             base[b], kinds[b] = 12.0, "intra_lexeme"
     audit["template_spans"] = len(templates)
-    audit["quality_revision"] = "r6"
     costs = [base[b] + config.risk_weight * risk[b] for b in range(count + 1)]
     return costs, risk, intra, kinds, audit

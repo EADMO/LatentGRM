@@ -35,7 +35,7 @@ python prepare_data.py train
 
 `download.py` downloads Qwen3-8B, OpenRubrics, the rubric generator, RewardBench, RewardBench 2, PPE-IFEval, IFBench, RM-Bench, HelpSteer3, and the spaCy English parser. Model and dataset versions are listed in [configs/assets.json](configs/assets.json). `HF_ENDPOINT` is optional when downloading directly from Hugging Face.
 
-Training data is saved to `data/train.jsonl`. Preparation converts OpenRubrics into the judge format and removes examples with empty candidate responses, yielding **35,612 examples**.
+Training data is saved to `data/train.jsonl`. Preparation converts OpenRubrics directly into LatentGRM training records and removes examples with empty candidate responses, yielding **35,612 examples**.
 
 ## Training
 

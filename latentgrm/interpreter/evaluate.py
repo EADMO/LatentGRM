@@ -1,12 +1,5 @@
 #!/usr/bin/env python
-"""Strict evaluation for the retrospective decoder.
-
-Full teacher-forced NLL is retained for comparability, but it is not treated as
-the main result: after a few gold target tokens the decoder can lean on target
-history. We therefore also report early-token and compression-boundary NLL,
-paired information gain over real prompt-only and held-out shuffled-latent
-controls, and short free generations with no target tokens supplied.
-"""
+"""Evaluate interpreter reconstruction, latent controls, and free generation."""
 
 from __future__ import annotations
 
