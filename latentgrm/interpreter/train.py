@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Initialize a Qwen3-4B or Qwen3-8B interpreter and train on latent prefixes."""
+"""Initialize the latent interpreter from the Stage 1 decoder."""
 
 from __future__ import annotations
 
@@ -633,7 +633,7 @@ def limited(indices: list[int], maximum: int | None, seed: int) -> list[int]:
 
 
 def load_interpreter(paths: dict[str, str], tokenizer, args, adapter=None):
-    """Load the selected pretrained base with a new or trained interpreter LoRA."""
+    """Load the Stage 1 decoder with a new or trained interpreter LoRA."""
     dtype = torch.bfloat16 if args.bf16 else torch.float16
     base = AutoModelForCausalLM.from_pretrained(
         paths["base_model"],
@@ -647,7 +647,7 @@ def load_interpreter(paths: dict[str, str], tokenizer, args, adapter=None):
     embedding_count = base.get_input_embeddings().num_embeddings
     if embedding_count < len(tokenizer):
         raise ValueError(
-            f"fresh Base tokenizer exceeds model embeddings: "
+            f"Stage 1 decoder tokenizer exceeds model embeddings: "
             f"embeddings={embedding_count}, tokenizer={len(tokenizer)}"
         )
     base.config.use_cache = False
@@ -679,7 +679,10 @@ def load_interpreter(paths: dict[str, str], tokenizer, args, adapter=None):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths", default=str(ROOT / "configs/interpreter.json"))
-    parser.add_argument("--base-model", help="Pretrained Qwen3-4B or Qwen3-8B directory.")
+    parser.add_argument(
+        "--base-model",
+        help="Stage 1 decoder checkpoint directory; defaults to configs/interpreter.json.",
+    )
     parser.add_argument(
         "--split-file", default=str(ROOT / "outputs/backward_splits.json")
     )
@@ -739,6 +742,7 @@ def main():
     paths = load_json(args.paths)
     if args.base_model:
         paths["base_model"] = args.base_model
+        paths["tokenizer"] = args.base_model
     tokenizer = AutoTokenizer.from_pretrained(
         paths["tokenizer"], local_files_only=True, trust_remote_code=True
     )

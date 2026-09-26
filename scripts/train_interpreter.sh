@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-BASE_MODEL=${BASE_MODEL:-models/Qwen3-8B}
-OUTPUT_DIR=${OUTPUT_DIR:-outputs/interpreter/$(basename "$BASE_MODEL")/model}
+DECODER_MODEL=${DECODER_MODEL:-outputs/Qwen3-8B/decoder/hf}
+OUTPUT_DIR=${OUTPUT_DIR:-outputs/interpreter/stage1-decoder/model}
 exec torchrun --standalone --nproc_per_node="${NPROC_PER_NODE:-8}" --module latentgrm.interpreter.train \
   --paths configs/interpreter.json --split-file outputs/interpreter/split.json \
-  --base-model "$BASE_MODEL" --output-dir "$OUTPUT_DIR" --seed 42 \
+  --base-model "$DECODER_MODEL" --output-dir "$OUTPUT_DIR" --seed 42 \
   --input-mode latent --latent-order forward --soft-mode weighted \
   --soft-temperature 1 --full-frontier-probability 1 \
   --train-views 1 --eval-views 1 --max-eval-records 512 \

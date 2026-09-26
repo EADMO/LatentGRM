@@ -33,7 +33,10 @@ SCOPES = ("first_1", "first_8", "first_32", "first_64", "chunk_boundaries", "all
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths", default=str(ROOT / "configs/interpreter.json"))
-    parser.add_argument("--base-model", help="Override the pretrained base directory saved with the adapter.")
+    parser.add_argument(
+        "--base-model",
+        help="Override the Stage 1 decoder directory saved with the adapter.",
+    )
     parser.add_argument("--split-file", default=str(ROOT / "outputs/interpreter/split.json"))
     parser.add_argument("--adapter", required=True)
     parser.add_argument("--output", required=True)
@@ -354,6 +357,7 @@ def main():
     paths["base_model"] = (
         args.base_model or PeftConfig.from_pretrained(args.adapter).base_model_name_or_path
     )
+    paths["tokenizer"] = paths["base_model"]
     tokenizer = AutoTokenizer.from_pretrained(paths["tokenizer"], local_files_only=True)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
