@@ -5,6 +5,12 @@
     "type": "model",
     "path": "models/Qwen3-8B"
   },
+  "qwen3-4b": {
+    "repo_id": "Qwen/Qwen3-4B",
+    "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+    "type": "model",
+    "path": "models/Qwen3-4B"
+  },
   "rubric-generator": {
     "repo_id": "OpenRubrics/RubricRM-8B-Rubric-v2",
     "revision": "e64e10cc41c0609b01e13824298985cb80c39e5a",

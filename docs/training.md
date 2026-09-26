@@ -1,5 +1,7 @@
 # Training
 
+The default configuration trains Qwen3-8B. Use `--config configs/qwen3_4b.json` for the Qwen3-4B model reported in the paper.
+
 `python train.py` runs the full pipeline. The `--stage` argument selects an individual stage.
 
 ## Stage 1: Latent Compression
