@@ -1,7 +1,7 @@
 {
   "model": "models/Qwen3-8B",
   "data": "data/train.jsonl",
-  "output": "outputs/Qwen3-8B",
+  "output": "outputs/LatentGRM-8B",
   "world_size": 8,
   "seed": 42,
   "expected_records": 35612,

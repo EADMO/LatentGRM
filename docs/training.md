@@ -54,7 +54,7 @@ A constrained dynamic program preserves the segment's latent budget, allowing ch
 
 ## Outputs and Resuming
 
-Training outputs are saved under `outputs/Qwen3-8B/`:
+Training outputs are saved under `outputs/LatentGRM-8B/`:
 
 | Directory | Contents |
 | --- | --- |
@@ -68,7 +68,7 @@ Training outputs are saved under `outputs/Qwen3-8B/`:
 The launcher resumes the latest checkpoint automatically. To select one explicitly:
 
 ```bash
-python train.py --stage stage2 --resume outputs/Qwen3-8B/stage2/checkpoint-1120
+python train.py --stage stage2 --resume outputs/LatentGRM-8B/stage2/checkpoint-1120
 ```
 
 Checkpoints are saved every epoch with optimizer, scheduler, and random states. Use `--output outputs/new-run` for a separate training run. The run's `code/` directory stores its source and environment settings.

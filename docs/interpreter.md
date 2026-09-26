@@ -1,6 +1,6 @@
 # Latent Interpreter
 
-The optional latent-token interpreter is initialized from the Stage 1 decoder at `outputs/Qwen3-8B/decoder/hf/`. It learns to reconstruct explicit reasoning from the joint encoder's weighted top-10 latent targets. Each latent is represented as a weighted sum of token embeddings from the Stage 1 decoder vocabulary.
+The optional latent-token interpreter is initialized from the Stage 1 decoder at `outputs/LatentGRM-8B/decoder/hf/`. It learns to reconstruct explicit reasoning from the joint encoder's weighted top-10 latent targets. Each latent is represented as a weighted sum of token embeddings from the Stage 1 decoder vocabulary.
 
 ## Training
 

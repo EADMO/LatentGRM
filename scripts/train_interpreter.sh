@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
-DECODER_MODEL=${DECODER_MODEL:-outputs/Qwen3-8B/decoder/hf}
+DECODER_MODEL=${DECODER_MODEL:-outputs/LatentGRM-8B/decoder/hf}
 OUTPUT_DIR=${OUTPUT_DIR:-outputs/interpreter/stage1-decoder/model}
 exec torchrun --standalone --nproc_per_node="${NPROC_PER_NODE:-8}" --module latentgrm.interpreter.train \
   --paths configs/interpreter.json --split-file outputs/interpreter/split.json \

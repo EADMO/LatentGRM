@@ -28,7 +28,7 @@ Run one benchmark:
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
 python evaluate.py \
   --backend vllm \
-  --model outputs/Qwen3-8B/stage2/hf \
+  --model outputs/LatentGRM-8B/stage2/hf \
   --benchmark rewardbench \
   --vote 5 \
   --tensor-parallel-size 8

@@ -53,7 +53,7 @@ The 4B model uses the same recipe:
 python train.py --config configs/qwen3_4b.json
 ```
 
-The final model is exported to `outputs/Qwen3-8B/stage2/hf/`, or `outputs/Qwen3-4B/stage2/hf/` with the 4B configuration. Rerunning the training command resumes an interrupted run and skips completed stages.
+The final model is exported to `outputs/LatentGRM-8B/stage2/hf/`, or `outputs/LatentGRM-4B/stage2/hf/` with the 4B configuration. Rerunning the training command resumes an interrupted run and skips completed stages.
 
 ## Evaluation
 
@@ -101,15 +101,15 @@ python evaluate.py --benchmark rewardbench --vote 5
 python evaluate.py --benchmark rewardbench2 --vote 5
 ```
 
-Evaluation loads `outputs/Qwen3-8B/stage2/hf/` by default. Use `--model` to select another model, `--tensor-parallel-size` to set the GPU count, or `--backend hf` to use Transformers. The default decoding settings use seed 42, top-10 interpolation, Gumbel temperature and noise scale 1, a context length of 6,144, up to 256 latent steps, and 8 answer tokens.
+Evaluation loads `outputs/LatentGRM-8B/stage2/hf/` by default. Use `--model` to select another model, `--tensor-parallel-size` to set the GPU count, or `--backend hf` to use Transformers. The default decoding settings use seed 42, top-10 interpolation, Gumbel temperature and noise scale 1, a context length of 6,144, up to 256 latent steps, and 8 answer tokens.
 
 Scoring follows each benchmark's aggregation: weighted section accuracy for RewardBench; prompt-level success for RewardBench 2; conflict-pair accuracy for PPE-IFEval; pairwise accuracy for IFBench and HelpSteer3; and the mean of Easy, Normal, and Hard accuracies for RM-Bench Chat. Scores are reported for each candidate order and their average.
 
-Results and metric summaries are written to `outputs/evaluation/<benchmark>/<checkpoint>/vote<N>/`. Rerunning the command continues from saved results. Use `--output` to select a different output file.
+Results and metric summaries are written to `outputs/evaluation/<benchmark>/LatentGRM-8B/vote<N>/`, or `LatentGRM-4B` when evaluating the 4B model. Rerunning the command continues from saved results. Use `--output` to select a different output file.
 
 ## Optional Interpreter
 
-The optional interpreter is initialized from the Stage 1 decoder at `outputs/Qwen3-8B/decoder/hf/` and learns to reconstruct explicit reasoning from the joint encoder's latent states. After completing Stage 1 and exporting its latent targets, run:
+The optional interpreter is initialized from the Stage 1 decoder at `outputs/LatentGRM-8B/decoder/hf/` and learns to reconstruct explicit reasoning from the joint encoder's latent states. After completing Stage 1 and exporting its latent targets, run:
 
 ```bash
 conda activate latentgrm-train

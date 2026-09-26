@@ -1,7 +1,7 @@
 {
   "model": "models/Qwen3-4B",
   "data": "data/train.jsonl",
-  "output": "outputs/Qwen3-4B",
+  "output": "outputs/LatentGRM-4B",
   "world_size": 8,
   "seed": 42,
   "expected_records": 35612,

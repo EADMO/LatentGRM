@@ -1,6 +1,6 @@
 {
-  "base_model": "outputs/Qwen3-8B/decoder/hf",
-  "tokenizer": "outputs/Qwen3-8B/decoder/hf",
-  "stage1_cache": "outputs/Qwen3-8B/cache",
-  "latent_soft_labels": "outputs/Qwen3-8B/targets"
+  "base_model": "outputs/LatentGRM-8B/decoder/hf",
+  "tokenizer": "outputs/LatentGRM-8B/decoder/hf",
+  "stage1_cache": "outputs/LatentGRM-8B/cache",
+  "latent_soft_labels": "outputs/LatentGRM-8B/targets"
 }
