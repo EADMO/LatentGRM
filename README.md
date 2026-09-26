@@ -18,22 +18,20 @@ Run the following commands from the repository root on Linux:
 ```bash
 conda create -n latentgrm-train python=3.12 -y
 conda activate latentgrm-train
-pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-pip install flash-attn==2.8.3 --no-build-isolation -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements.txt
+pip install flash-attn==2.8.3 --no-build-isolation
 ```
 
-Training uses PyTorch, Transformers, PEFT, and DeepSpeed. See [requirements.md](requirements.md) for CUDA and inference dependencies.
+Training uses PyTorch, Transformers, PEFT, and DeepSpeed on Linux with Python 3.12 and CUDA 13. Install FlashAttention after the other packages because its build imports PyTorch.
 
 ## Model and Data Preparation
 
 ```bash
-export HF_ENDPOINT=https://hf-mirror.com
-export HF_HUB_DISABLE_XET=1
 python download.py
 python prepare_data.py train
 ```
 
-`download.py` downloads Qwen3-4B, Qwen3-8B, OpenRubrics, the rubric generator, RewardBench, RewardBench 2, PPE-IFEval, IFBench, RM-Bench, HelpSteer3, and the spaCy English parser. Model and dataset versions are listed in [configs/assets.json](configs/assets.json). `HF_ENDPOINT` is optional when downloading directly from Hugging Face.
+`download.py` downloads Qwen3-4B, Qwen3-8B, OpenRubrics, the rubric generator, RewardBench, RewardBench 2, PPE-IFEval, IFBench, RM-Bench, HelpSteer3, and the spaCy English parser. Model and dataset versions are listed in [configs/assets.json](configs/assets.json).
 
 Training data is saved to `data/train.jsonl`. Preparation converts OpenRubrics directly into LatentGRM training records and removes examples with empty candidate responses, yielding **35,612 examples**.
 
@@ -62,11 +60,11 @@ The final model is exported to `outputs/LatentGRM-8B/stage2/hf/`, or `outputs/La
 ```bash
 conda create -n latentgrm-infer python=3.12 -y
 conda activate latentgrm-infer
-pip install -r requirements-inference.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements-inference.txt
 python -m latentgrm.vllm_support
 ```
 
-The [vLLM extension](third_party/vllm/readme.md) supports latent sampling, tensor-parallel top-k projection, cached decode embeddings, and continuous multi-vote generation.
+The [vLLM extension](third_party/vllm/readme.md) requires vLLM 0.26.0 and supports latent sampling, tensor-parallel top-k projection, cached decode embeddings, and continuous multi-vote generation.
 
 ### Prepare benchmarks and generate rubrics
 

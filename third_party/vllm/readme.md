@@ -7,14 +7,7 @@ LatentGRM inference requires the included overlay for **vLLM 0.26.0**.
 Run from the repository root:
 
 ```bash
-conda create -n latentgrm-infer python=3.12 -y
-conda activate latentgrm-infer
-pip install -r requirements-inference.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
-```
-
-Apply the overlay:
-
-```bash
+pip install -r requirements-inference.txt
 python -m latentgrm.vllm_support
 ```
 

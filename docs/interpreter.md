@@ -37,7 +37,7 @@ The default input is cached joint-encoder targets. Use `--dynamic-latents` to su
 ## Fidelity Metrics
 
 ```bash
-pip install -r requirements-interpreter.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install -r requirements-interpreter.txt
 python download.py --assets bertscore
 python -m latentgrm.interpreter.score \
   --evaluation outputs/interpreter/stage1-decoder/evaluation.json \
