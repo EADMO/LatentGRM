@@ -7,6 +7,11 @@ PHASES=['cache','encoder','decoder','joint','targets','merge','stage2']
 
 def read(path): return json.loads(Path(path).read_text())
 def nonempty(path): return path.is_file() and path.stat().st_size>0
+def count_records(path):
+    with path.open(encoding='utf-8') as stream:
+        records=sum(bool(line.strip()) for line in stream)
+    if not records: raise ValueError(f'Training data is empty: {path}')
+    return records
 def hf_complete(path):
     if not nonempty(path/'config.json'): return False
     indices=list(path.glob('*.index.json'))
@@ -31,8 +36,8 @@ def latest_checkpoint(directory,world):
     paths=[p for p in directory.glob('checkpoint-*') if p.name.removeprefix('checkpoint-').isdigit()]
     return next((p for p in sorted(paths,key=lambda p:int(p.name.split('-')[-1]),reverse=True) if checkpoint_complete(p,world)),None)
 
-def validate_config(c):
-    steps=math.ceil(math.ceil(c['expected_records']/c['world_size'])/c['stage2_batch_size'])
+def validate_config(c,records):
+    steps=math.ceil(math.ceil(records/c['world_size'])/c['stage2_batch_size'])
     steps=math.ceil(steps/c['stage2_accumulation'])
     if c['stage2_epochs']<1: raise ValueError('Training epochs must be positive.')
     if not 0<c['stage2_warmup_steps']<c['stage2_lr_decay_steps']:
@@ -76,8 +81,10 @@ def main():
     if args.model: c['model']=args.model
     if args.resume and args.stage not in ['encoder','decoder','joint','stage2']:
         parser.error('--resume requires a specific training stage; all resumes automatically.')
-    steps=validate_config(c)
     out=Path(c['output']).resolve();model=Path(c['model']).resolve();data=Path(c['data']).resolve()
+    records=count_records(data)
+    steps=validate_config(c,records)
+    c['records']=records
     env=dict(os.environ);env['TOKENIZERS_PARALLELISM']='false';env.setdefault('OMP_NUM_THREADS','1')
     env['PYTHONPATH']=str(ROOT)+os.pathsep+env.get('PYTHONPATH','')
     env.setdefault('HF_HUB_DISABLE_TELEMETRY','1');env.setdefault('WANDB_DISABLED','true')
@@ -110,7 +117,7 @@ def main():
         for prerequisite in {'encoder':[], 'decoder':['encoder'], 'joint':['encoder','decoder'], 'stage2':['joint']}[phase]:
             require_stage(prerequisite)
         if phase=='stage2' and not args.dry_run:
-            if not targets_complete(labels,c['expected_records']) or not hf_complete(merged/'hf'):
+            if not targets_complete(labels,records) or not hf_complete(merged/'hf'):
                 raise RuntimeError('Complete targets and merge before Stage 2.')
         if phase=='stage2':
             epochs=c['stage2_epochs'];total_steps=steps*epochs;lr=c['stage2_learning_rate'];batch=c['stage2_batch_size'];accum=c['stage2_accumulation']
@@ -124,7 +131,7 @@ def main():
             command+=['--lr_decay_steps',c['stage2_lr_decay_steps'],'--warmup_steps',c['stage2_warmup_steps']]
         else:
             ds_path=c['deepspeed']
-            minibatches=math.ceil(math.ceil(c['expected_records']/c['world_size'])/c['stage1_batch_size'])
+            minibatches=math.ceil(math.ceil(records/c['world_size'])/c['stage1_batch_size'])
             total_steps=math.ceil(minibatches/c['stage1_accumulation'])*c['stage1_epochs']
             epochs=c['stage1_epochs'];lr=c['stage1_learning_rate'];batch=c['stage1_batch_size'];accum=c['stage1_accumulation']
             encoder=model if phase=='encoder' else stage_dirs['encoder']/'hf'
@@ -157,9 +164,9 @@ def main():
         elif phase in stage_dirs: training(phase)
         elif phase=='targets':
             require_stage('joint')
-            if targets_complete(labels,c['expected_records']): print('targets: complete');continue
+            if targets_complete(labels,records): print('targets: complete');continue
             run(module('latentgrm.semantic_chunking.generate_soft_labels','--encoder_model_path',stage_dirs['encoder']/'hf','--decoder_model_path',stage_dirs['decoder']/'hf','--lora_path',stage_dirs['joint']/'lora_adapter','--save_path',labels,'--data_path',data,'--use','semantic','--stage1_cache_path',cache,'--mp_size',c['world_size'],'--batch_size','16','--chunk_size','1000','--dtype','bfloat16','--compression_rate',c['compression_rate'],'--topk_interpolation',c['topk'],'--resume'))
-            if not args.dry_run and not targets_complete(labels,c['expected_records']): raise RuntimeError('Soft target export is incomplete.')
+            if not args.dry_run and not targets_complete(labels,records): raise RuntimeError('Soft target export is incomplete.')
         elif phase=='merge':
             require_stage('joint')
             if hf_complete(merged/'hf'): print('joint decoder: complete');continue

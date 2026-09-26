@@ -4,7 +4,6 @@
   "output": "outputs/LatentGRM-4B",
   "world_size": 8,
   "seed": 42,
-  "expected_records": 35612,
   "compression_rate": 8,
   "topk": 10,
   "stage1_epochs": 3,
