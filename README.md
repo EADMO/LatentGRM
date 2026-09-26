@@ -99,7 +99,7 @@ python evaluate.py --benchmark rewardbench --vote 5
 python evaluate.py --benchmark rewardbench2 --vote 5
 ```
 
-Evaluation loads `outputs/LatentGRM-8B/stage2/hf/` by default. Use `--model` to select another model, `--tensor-parallel-size` to set the GPU count, or `--backend hf` to use Transformers. The default decoding settings use seed 20260803, top-10 interpolation, Gumbel temperature and noise scale 1, a context length of 6,144, up to 512 latent steps, and 8 answer tokens.
+Evaluation loads `outputs/LatentGRM-8B/stage2/hf/` by default. Use `--model` to select another model, `--tensor-parallel-size` to set the GPU count, or `--backend hf` to use Transformers. The default decoding settings use seed 42, top-10 interpolation, Gumbel temperature and noise scale 1, a context length of 6,144, up to 256 latent steps, and 8 answer tokens.
 
 Scoring follows each benchmark's aggregation: weighted section accuracy for RewardBench; prompt-level success for RewardBench 2; conflict-pair accuracy for PPE-IFEval; pairwise accuracy for IFBench and HelpSteer3; and the mean of Easy, Normal, and Hard accuracies for RM-Bench Chat. Scores are reported for each candidate order and their average.
 
