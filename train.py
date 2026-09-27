@@ -143,7 +143,9 @@ def main():
                 raise RuntimeError('Checkpoint is beyond the configured training target.')
             if not args.dry_run: promote_checkpoint(resume,path,phase)
             print(f'{phase}: recover final export from {resume.name}');return
-        command+=['--train_data_path',data,'--bfloat16','True','--topk_interpolation',c['topk'],'--lora_tune','True','--lora_rank',c['lora_rank'],'--lora_dropout',c['lora_dropout'],'--deepspeed',ds_path,'--no_remove_unused_columns','--learning_rate',lr,'--warmup_ratio','0' if phase=='stage2' else '0.05','--weight_decay','0.01','--num_train_epochs',epochs,'--bf16','--per_device_train_batch_size',batch,'--gradient_accumulation_steps',accum,'--dataloader_drop_last','False','--logging_steps','10','--save_total_limit','2','--save_strategy','epoch','--gradient_checkpointing','True','--report_to','none','--seed',c['seed'],'--output_dir',path]
+        command+=['--train_data_path',data,'--bfloat16','True','--topk_interpolation',c['topk'],'--lora_tune','True','--lora_rank',c['lora_rank'],'--lora_dropout',c['lora_dropout'],'--deepspeed',ds_path,'--no_remove_unused_columns','--learning_rate',lr]
+        if phase!='stage2': command+=['--warmup_ratio','0.05']
+        command+=['--weight_decay','0.01','--num_train_epochs',epochs,'--bf16','--per_device_train_batch_size',batch,'--gradient_accumulation_steps',accum,'--dataloader_drop_last','False','--logging_steps','10','--save_total_limit','2','--save_strategy','epoch','--gradient_checkpointing','True','--report_to','none','--seed',c['seed'],'--output_dir',path]
         if resume: command+=['--resume_from_checkpoint',resume]
         run(command)
         if not args.dry_run:

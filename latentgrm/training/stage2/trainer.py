@@ -24,14 +24,16 @@ class Stage2Trainer(Trainer):
         decay_steps = getattr(self.args, "lr_decay_steps", None)
         if decay_steps is None:
             return super().create_scheduler(num_training_steps, optimizer=optimizer)
-        if self.args.warmup_steps < 1 or decay_steps <= self.args.warmup_steps:
+        decay_steps = int(decay_steps)
+        warmup_steps = int(self.args.warmup_steps)
+        if warmup_steps < 1 or decay_steps <= warmup_steps:
             raise ValueError("WarmupDecayLR requires 0 < warmup_steps < lr_decay_steps")
         if self.lr_scheduler is None:
             from deepspeed.runtime.lr_schedules import WarmupDecayLR
             self.lr_scheduler = WarmupDecayLR(
                 optimizer if optimizer is not None else self.optimizer,
                 total_num_steps=decay_steps,
-                warmup_num_steps=self.args.warmup_steps,
+                warmup_num_steps=warmup_steps,
                 warmup_min_lr=0.0,
                 warmup_max_lr=self.args.learning_rate,
                 warmup_type="log",
